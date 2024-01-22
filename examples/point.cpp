@@ -7,7 +7,7 @@ class Point {
     float y;
 public:
     Point(float _x, float _y) : x(_x), y(_y) {}
-    double distance(Point& p1, Point& p2) const;
+    double distance(Point& p1, Point& p2);
     float distance(Point& p1, Point& p2);
     bool isEqual(Point& p1, Point& p2) {
         return (p1.x - p2.x < 0.0001) && (p1.y - p2.y < 0.0001);
@@ -28,7 +28,7 @@ double Point::distance(Point& p1, Point& p2) {
     return std::sqrt((p1.x - p2.x) *  (p1.x - p2.x) + (p1.y - p2.y) *  (p1.y - p2.y));
 }
 
-float Point::distance(Point& p1, Point& p2) const {
+float Point::distance(Point& p1, Point& p2) {
     return std::sqrt((p1.x - p2.x) *  (p1.x - p2.x) + (p1.y - p2.y) *  (p1.y - p2.y));
 }
 
