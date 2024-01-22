@@ -20,7 +20,6 @@ class Compiler(Exception):
         command_line = "g++ " + self.file_code + " -o " + "./../build/testOut"
         if self.include_file is not "":
             command_line = command_line + " -I" + self.include_file
-        print(command_line)
         s = subprocess.check_call(command_line, shell=True) 
         return s
     def run(self):
