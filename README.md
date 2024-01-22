@@ -8,4 +8,4 @@ Requirements:
 * Ninja
 * python 3.11
 # Struct of the main algorithm
-[Struct](images/struct.png)
+![plot](images/struct.png)
