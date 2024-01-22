@@ -32,3 +32,6 @@
 *.app
 
 /build
+openai-env
+.vscode
+***/__pycache__/
