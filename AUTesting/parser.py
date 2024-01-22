@@ -5,6 +5,7 @@ class Parser(Exception):
     def __init__(self, path_to_file):
         self.path = path_to_file
         self.functions = []
+        self.signatures = []
     
     def isExist(self):
         return os.path.isfile(self.path)
@@ -27,10 +28,12 @@ class Parser(Exception):
                     if dec in line and len(dec) > 0:
                         if "}" in line:
                             self.functions.append(line)
+                            self.signatures.append(dec)
                         elif "{" in line or ";" not in line:
                             inFunction = True
                             cur_func = line + "\n"
                             numBracket = line.count("{")
+                            self.signatures.append(dec)
                         
                     
     def clear_bracket(self, a):
@@ -72,3 +75,6 @@ a.run()
 
 b = Parser("./../examples/point.cpp")
 b.run()
+for i in range(len(a.signatures)):
+    print(a.signatures[i])
+    print(a.functions[i])
