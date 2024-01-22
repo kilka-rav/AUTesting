@@ -6,6 +6,7 @@ class Parser(Exception):
         self.path = path_to_file
         self.functions = []
         self.signatures = []
+        self.includes = []
     
     def isExist(self):
         return os.path.isfile(self.path)
@@ -16,6 +17,8 @@ class Parser(Exception):
         cur_func = ""
         lines = file.split('\n')
         for line in lines:
+            if "#include" in line:
+                self.includes.append(line + "\n")
             if inFunction:
                 numBracket = numBracket + line.count("{") - line.count('}')
                 cur_func = cur_func + line + "\n"
@@ -75,6 +78,9 @@ a.run()
 
 b = Parser("./../examples/point.cpp")
 b.run()
+for i in a.includes:
+    print(i)
 for i in range(len(a.signatures)):
     print(a.signatures[i])
     print(a.functions[i])
+    
