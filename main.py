@@ -4,6 +4,7 @@ import re
 
 import AUTesting.PGenerator as pgen
 import AUTesting.parser as aup
+import AUTesting.compiler as compiler
 
 
 def extract_code_from_chatgpt_response(response):
