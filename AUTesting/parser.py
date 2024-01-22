@@ -29,13 +29,3 @@ class Parser(Exception):
         if not self.isExist():
             raise Parser(self.path + " isn't exist")
         self.find_function()
-        print(len(self.functions))
-        for a in self.functions:
-            print("---------------------------------")
-            print(a)
-            print("---------------------------------")
-a = Parser("./../examples/simple.cpp")
-a.run()
-print("---------------------------------")
-b = Parser("./../examples/point.cpp")
-b.run()

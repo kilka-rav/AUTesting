@@ -5,7 +5,6 @@ from typing import Optional
 
 @dataclass
 class Prompt:
-    name: str
     signature: str
     example: Optional[str] = None
     doc: Optional[str] = None
@@ -38,7 +37,8 @@ class Prompt:
 Your task is to generate a runnable test case code for the provided code (Use google tests). Please ensure that the test case covers all possible scenarios and edge cases, and that the code is easy to read and understand. Your response should only include the runnable code. Do not return any original code. Additionally, please make sure that the test case is well-organized and follows best practices for testing.
 """
         prompt += f"""
-Function: {self.signature}
+Function: 
+{self.signature}
 """
         if self.body:
             prompt += f"""
@@ -69,14 +69,13 @@ Fixed test:
 
 
 def generate(
-    f_name: str,
     f_signature: str,
     f_body: str,
-    f_doc: Optional[str],
-    usage_example: Optional[str],
+    f_doc: Optional[str] = None,
+    usage_example: Optional[str] = None,
 ) -> list[Prompt]:
     # create base prompt
-    prompts = [Prompt(f_name, f_signature)]
+    prompts = [Prompt(f_signature)]
 
     # each next prompt has more information
     if usage_example:
