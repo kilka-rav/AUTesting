@@ -9,18 +9,33 @@ class Parser(Exception):
     def isExist(self):
         return os.path.isfile(self.path)
 
+    def get_body(self, declarations, file):
+        print(declarations)
+        lines = file.split('\n')
+        for line in lines:
+            for dec in declarations:
+                if dec in line and len(dec) > 0:
+                    print("find: ", dec)
+                    
+
     def find_function(self):
-        pattern = r'\b[a-zA-Z_]\w*\s+[a-zA-Z_]\w*\s*\([^)]*\)\s*\{[^}]*\}'
-       
+        pattern_cpp =  r'\b(?:\w+\s+)*(?:\w+\s+)*\w+(?:::\w+)?\s+\w+\s*\([^)]*\)\s*[^;]\{?'
         with open(self.path, "r") as file:
             data = " ".join(file.readlines())
-            a = re.findall(pattern, data)
-            self.functions = a
+            a = re.findall(pattern_cpp, data)
+            self.get_body(a, data)
 
     def run(self):
         if not self.isExist():
             raise Parser(self.path + " isn't exist")
         self.find_function()
-        print(self.functions)
+        print(len(self.functions))
+        for a in self.functions:
+            print("---------------------------------")
+            print(a)
+            print("---------------------------------")
 a = Parser("./../examples/simple.cpp")
 a.run()
+print("---------------------------------")
+b = Parser("./../examples/point.cpp")
+b.run()
