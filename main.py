@@ -24,6 +24,7 @@ def extract_code_from_chatgpt_response(response):
 
     return cleaned_code_blocks
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.debug("Hello world!")
@@ -44,11 +45,11 @@ if __name__ == "__main__":
     for prompt in prompts:
         logging.info(f"Prompt: {prompt}")
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-1106",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a professional tester of C++ programs.",
+                    "content": "You are a professional tester of C++ programs. When I ask you to write a test, you will answer only in code without any explanatory text. Response should not contain tested code code.",
                 },
                 {
                     "role": "user",
@@ -59,3 +60,14 @@ if __name__ == "__main__":
         completions.append(completion)
         logging.info(f"Response: {completion}")
         break
+
+    # NOTE: assume that there is only once code section in a response
+    tests = []
+    for compl in completions:
+        for choice in compl.choices:
+            tests.append(extract_code_from_chatgpt_response(choice.message.content)[0])
+
+    logging.info(f"Tests:")
+    for test in tests:
+        logging.info(f"--------------------------------------------------")
+        logging.info(f"  Test:\n{test}")
