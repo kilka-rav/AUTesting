@@ -25,7 +25,7 @@ class Compiler(Exception):
             command_line += " -I ./ -I " + self.include_file
         command_line = shlex.split(command_line)
         logging.info(f"Compile: {command_line}")
-        s = subprocess.run(command_line)
+        s = subprocess.run(command_line, capture_output=True, text=True)
         return s
 
     def run(self, srcs: str, out_file):
