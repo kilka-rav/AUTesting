@@ -61,7 +61,7 @@ def parseArguments():
     parser.add_argument("--source-file", help="path to file with sources", required=True)
     parser.add_argument("--include-file", help="path to include file", required=True)
     parser.add_argument("--compiler", help="Using compiler", default="gcc")
-    parser.add_argument("--model-gpt", help="Using version of chatGPT for generation tests, gpt-4-1106-preview-recommend for the best results", default="gpt-4-1106-preview")
+    parser.add_argument("--model-gpt", help="Using version of chatGPT for generation tests, gpt-4-1106-preview recommend for the best results", default="gpt-4-1106-preview")
     return parser.parse_args()
 
 

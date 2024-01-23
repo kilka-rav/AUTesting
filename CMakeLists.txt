@@ -14,7 +14,6 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(tests)
 
-add_subdirectory(python)
 if(EXAMPLES)
     add_subdirectory(examples)
 endif()
