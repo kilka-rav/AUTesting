@@ -20,7 +20,14 @@ class Compiler(Exception):
         return True
 
     def start(self, srcs: str, out_file: str):
-        command_line = "gcc " + self.file_code + f" {srcs} " + " -o " + out_file
+        command_line = (
+            "gcc "
+            + self.file_code
+            + f" {srcs} "
+            + " -fprofile-arcs -ftest-coverage " # for code coverage
+            + " -o "
+            + out_file
+        )
         if self.include_file is not "":
             command_line += " -I ./ -I " + self.include_file
         command_line = shlex.split(command_line)

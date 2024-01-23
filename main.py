@@ -10,6 +10,10 @@ import AUTesting.PGenerator as pgen
 import AUTesting.parser as aup
 import AUTesting.compiler as compiler
 
+# coverage:
+# lcov --capture --directory build/ --output-file build/coverage.info
+# genhtml build/coverage.info --output-directory out
+
 
 def extract_c_functions(header_content):
     """
@@ -103,7 +107,7 @@ if __name__ == "__main__":
     for prompt in messages_s:
         logging.info(f"Prompt: {prompt}")
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo-1106", messages=prompt
+            model="gpt-4-1106-preview", messages=prompt
         )
         logging.info(f"Response: {completion}")
         prompt.append(
@@ -117,6 +121,9 @@ if __name__ == "__main__":
     passed = []
     failed = []
     for compl in messages_s:
+        if len(compl) <= 2:
+            continue
+
         test = aup.extract_code_from_chatgpt_response(compl[-1]["content"])
         if len(test) == 0:
             test = compl[-1]["content"]
@@ -155,7 +162,7 @@ if __name__ == "__main__":
             )
             logging.info(f"Recompile prompt: {compl}")
             compl = client.chat.completions.create(
-                model="gpt-3.5-turbo-1106", messages=compl
+                model="gpt-4-1106-preview", messages=compl
             )
             logging.info(f"Response: {compl}")
 

@@ -35,3 +35,4 @@
 openai-env
 .vscode
 ***/__pycache__/
+out
