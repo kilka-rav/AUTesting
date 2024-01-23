@@ -33,76 +33,6 @@
 //
 #include "RBTree.h"
 
-
-/****************************************************************************************
- *
- *   defining structures
- *
- ***/
-
-/// An attribute of every node in the tree. Used for balancing of tree.
-enum color_t {BLACK, RED};
-
-
-struct rbNode_t
-{
-    struct rbNode_t* parent;
-    struct rbNode_t* left;
-    struct rbNode_t* right;
-
-    enum color_t     color;
-    rbPair           pair;
-};
-typedef struct rbNode_t* rbNode;
-
-
-struct rbTree_t
-{
-    rbNode  treeRoot;
-};
-/***
- *
- *   end of defining structures
- *
- ****************************************************************************************/
-
-
-
-/****************************************************************************************
- *
- *   To test the case of memory allocation failure
- *
- ***/
-#ifdef RUN_TESTS
-
-static void* calloc_broken(size_t nnum, size_t size) {
-    static int stap = 0;
-
-    void* res = NULL;
-    if (stap != 0 && stap != 2) {
-        res = calloc(nnum, size);
-    }
-
-    stap++;
-
-    return res;
-}
-#define CALLOC(x, y) calloc_broken(x, y)
-
-#else
-
-#define CALLOC(x, y) calloc(x, y)
-
-#endif //TEST
-/***
- *
- *   end of declaring macros for the test
- *
- ****************************************************************************************/
-
-
-
-
 /****************************************************************************************
  *
  *   prototypes for helper functions
@@ -164,7 +94,7 @@ rbResult rbCreate (const rbPair* data, size_t size, rbTree* tree)
         return RB_INVALID_ARGS;
     }
 
-    *tree = (struct rbTree_t*) CALLOC(1, sizeof(struct rbTree_t));
+    *tree = (struct rbTree_t*) calloc(1, sizeof(struct rbTree_t));
 
     if (*tree == NULL) {
         return RB_LACK_OF_MEMORY;
@@ -230,7 +160,7 @@ rbResult rbInsert (rbTree tree, rbPair pair) {
         return RB_SUCCESS;
     }
     else {
-        node = (rbNode) CALLOC(1, sizeof(struct rbNode_t));
+        node = (rbNode) calloc(1, sizeof(struct rbNode_t));
     }
 
     if (node == NULL) {
