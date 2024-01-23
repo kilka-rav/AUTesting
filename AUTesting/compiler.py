@@ -1,8 +1,10 @@
 import os
 import subprocess
+import logging
+
 
 class Compiler(Exception):
-    def __init__(self, file_code, include_file = "", link_libraries = []):
+    def __init__(self, file_code, include_file="", link_libraries=[]):
         self.file_code = file_code
         self.include_file = include_file
         self.link_libraries = link_libraries
@@ -16,17 +18,22 @@ class Compiler(Exception):
             raise Compiler(self.include_file + " isn't exist")
         return True
 
-    def start(self):
-        command_line = "g++ " + self.file_code + " -o " + "./../build/testOut"
+    def start(self, out_file: str):
+        command_line = "g++ " + self.file_code + " -o " + out_file
         if self.include_file is not "":
             command_line = command_line + " -I" + self.include_file
-        s = subprocess.check_call(command_line, shell=True) 
+        logging.info(f"Compile: {command_line}")
+        s = subprocess.check_call(command_line, shell=True)
         return s
-    def run(self):
+
+    def run(self, out_file):
         self.check_files()
-        need_refine = self.start()
+        need_refine = self.start(out_file)
         return need_refine
 
-a = Compiler("./../examples/main.cpp")
-isCompile = a.run()
-print(isCompile)
+
+def fixErrors(code: str):
+    # add include assert.h
+    code = "\n#include <assert.h>\n" + code
+    code = "\n#include <iostream>\n" + code
+    return code

@@ -71,16 +71,3 @@ class Parser(Exception):
         if not self.isExist():
             raise Parser(self.path + " isn't exist")
         self.find_function()
-        
-
-a = Parser("./../examples/simple.cpp")
-a.run()
-
-b = Parser("./../examples/point.cpp")
-b.run()
-for i in a.includes:
-    print(i)
-for i in range(len(a.signatures)):
-    print(a.signatures[i])
-    print(a.functions[i])
-    
