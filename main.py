@@ -16,6 +16,7 @@ import argparse
 # lcov --capture --directory build/ --output-file build/coverage.info
 # genhtml build/coverage.info --output-directory out
 
+#example run: python3 main.py --source-file="./examples/RBTree/RBTree.c" --include-file="./examples/RBTree/RBTree.h" --compiler=gcc --model-gpt=gpt-3.5-turbo
 
 def extract_c_functions(header_content):
     """
