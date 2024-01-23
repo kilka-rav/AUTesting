@@ -70,7 +70,7 @@ Fixed test:
 
 def generate(
     f_signature: str,
-    f_body: str,
+    f_body: Optional[str] = None,
     f_doc: Optional[str] = None,
     usage_example: Optional[str] = None,
 ) -> list[Prompt]:
@@ -82,6 +82,7 @@ def generate(
         prompts.append(prompts[-1].refineWithExample(usage_example))
     if f_doc:
         prompts.append(prompts[-1].refineWithDoc(f_doc))
-    prompts.append(prompts[-1].refineWithBody(f_body))
+    if f_body:
+        prompts.append(prompts[-1].refineWithBody(f_body))
 
     return prompts

@@ -1,13 +1,14 @@
 import os
 import re
 
+
 class Parser(Exception):
     def __init__(self, path_to_file):
         self.path = path_to_file
         self.functions = []
         self.signatures = []
         self.includes = []
-    
+
     def isExist(self):
         return os.path.isfile(self.path)
 
@@ -15,12 +16,12 @@ class Parser(Exception):
         inFunction = False
         numBracket = 0
         cur_func = ""
-        lines = file.split('\n')
+        lines = file.split("\n")
         for line in lines:
             if "#include" in line:
                 self.includes.append(line + "\n")
             if inFunction:
-                numBracket = numBracket + line.count("{") - line.count('}')
+                numBracket = numBracket + line.count("{") - line.count("}")
                 cur_func = cur_func + line + "\n"
                 if numBracket == 0:
                     self.functions.append(cur_func)
@@ -37,8 +38,7 @@ class Parser(Exception):
                             cur_func = line + "\n"
                             numBracket = line.count("{")
                             self.signatures.append(dec)
-                        
-                    
+
     def clear_bracket(self, a):
         lst = []
         for el in a:
@@ -51,10 +51,10 @@ class Parser(Exception):
         return lst
 
     def find_function(self):
-        pattern_next =  r'\b\w+\s+\w+\s*\([^)]*\)\s*(?:\n\s*)?\{'
-        pattern_c = r'\b\w+\s+\w+\s*\([^)]*\)\s*'
-        pattern_method = r'\w+\s+\w+::\w+\([^)]*\)\s*{'
-        
+        pattern_next = r"\b\w+\s+\w+\s*\([^)]*\)\s*(?:\n\s*)?\{"
+        pattern_c = r"\b\w+\s+\w+\s*\([^)]*\)\s*"
+        pattern_method = r"\w+\s+\w+::\w+\([^)]*\)\s*{"
+
         with open(self.path, "r") as file:
             data = " ".join(file.readlines())
             a = re.findall(pattern_next, data)
@@ -71,3 +71,26 @@ class Parser(Exception):
         if not self.isExist():
             raise Parser(self.path + " isn't exist")
         self.find_function()
+
+
+def extract_code_from_chatgpt_response(response):
+    """
+    Extracts code blocks from a ChatGPT response.
+
+    :param response: A string containing the ChatGPT response.
+    :return: A list of code blocks extracted from the response.
+    """
+    # Define the regex pattern for code blocks
+    code_block_pattern_cpp = r"(```.*?```)"
+
+    # Use regex to find all code blocks
+    code_blocks = re.findall(code_block_pattern_cpp, response, re.DOTALL)
+
+    # Clean up the code blocks by stripping unnecessary whitespace
+    cleaned_code_blocks = [block.strip() for block in code_blocks]
+
+    cleaned_code_blocks = [
+        "\n".join(block.split("\n")[1:-1]) for block in cleaned_code_blocks
+    ]
+
+    return cleaned_code_blocks
