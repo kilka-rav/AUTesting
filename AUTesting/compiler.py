@@ -5,10 +5,11 @@ import shlex
 
 
 class Compiler(Exception):
-    def __init__(self, file_code, include_file="", link_libraries=[]):
+    def __init__(self, file_code, include_file="", link_libraries=[], using_compiler = "gcc"):
         self.file_code = file_code
         self.include_file = include_file
         self.link_libraries = link_libraries
+        self.using_compiler = using_compiler
 
     def check_files(self):
         if self.file_code is None:
@@ -21,7 +22,7 @@ class Compiler(Exception):
 
     def start(self, srcs: str, out_file: str):
         command_line = (
-            "gcc "
+            self.using_compiler + " "
             + self.file_code
             + f" {srcs} "
             + " -fprofile-arcs -ftest-coverage " # for code coverage
@@ -48,6 +49,7 @@ def fixErrors(code: str):
     code = "\n#include <string.h>\n" + code
     code = '\n#include "./examples/RBTree/RBTree.h"\n' + code
     code = code.replace('"RBTree.h"', '"./examples/RBTree/RBTree.h"')
+    code = code.replace('"Operation.h"', '"./examples/operation/Operation.h"')
     code = code.replace("<cassert>", "<assert.h>")
     code = code.replace("<cstdlib>", "<stdlib.h>")
     code = code.replace("nullptr", "NULL")
