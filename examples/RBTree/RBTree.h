@@ -70,9 +70,33 @@ struct rbPair_t {
  *
  ****************************************************************************************/
 
+/****************************************************************************************
+ *
+ *   defining structures
+ *
+ ***/
 
+/// An attribute of every node in the tree. Used for balancing of tree.
+enum color_t { BLACK, RED };
 
+struct rbNode_t {
+  struct rbNode_t *parent;
+  struct rbNode_t *left;
+  struct rbNode_t *right;
 
+  enum color_t color;
+  rbPair pair;
+};
+typedef struct rbNode_t *rbNode;
+
+struct rbTree_t {
+  rbNode treeRoot;
+};
+/***
+ *
+ *   end of defining structures
+ *
+ ****************************************************************************************/
 
 /****************************************************************************************
  *
