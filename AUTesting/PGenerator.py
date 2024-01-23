@@ -37,7 +37,7 @@ class Prompt:
 Your task is to generate a runnable test case code for the provided code. Please ensure that the test case covers all possible scenarios and edge cases, and that the code is easy to read and understand. Your response should only include the runnable code. Do not return any original code. Additionally, please make sure that the test case is well-organized and follows best practices for testing.
 """
         prompt += f"""
-Function: 
+Function for test: 
 {self.signature}
 """
         if self.body:
