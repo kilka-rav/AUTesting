@@ -2,68 +2,100 @@ from openai import OpenAI
 import logging
 import re
 import uuid
+import os
+import subprocess
+
 
 import AUTesting.PGenerator as pgen
 import AUTesting.parser as aup
 import AUTesting.compiler as compiler
 
 
-def extract_code_from_chatgpt_response(response):
+def extract_c_functions(header_content):
     """
-    Extracts code blocks from a ChatGPT response.
+    Extracts C function declarations from the given header file content.
 
-    :param response: A string containing the ChatGPT response.
-    :return: A list of code blocks extracted from the response.
+    Args:
+    - header_content (str): The content of the C header file.
+
+    Returns:
+    - List[str]: A list of function declarations.
     """
-    # Define the regex pattern for code blocks
-    code_block_pattern_cpp = r"```cpp(.*?)```"
-    code_block_pattern_c = r"```c(.*?)```"
+    # Regular expression for C function declarations
+    # This regex tries to capture typical C function declarations, including those with pointers and nested parentheses.
+    function_pattern = re.compile(
+        r"\b[A-Za-z_][A-Za-z0-9_]*[\s\*]+\**\s*[A-Za-z_][A-Za-z0-9_]*\s*\((?:[^()]|\([^()]*\))*\)"
+    )
 
-    # Use regex to find all code blocks
-    code_blocks = re.findall(code_block_pattern_cpp, response, re.DOTALL)
-    code_blocks.extend(re.findall(code_block_pattern_c, response, re.DOTALL))
+    # Find all matches
+    return function_pattern.findall(header_content)
 
-    # Clean up the code blocks by stripping unnecessary whitespace
-    cleaned_code_blocks = [block.strip() for block in code_blocks]
 
-    cleaned_code_blocks = [
-        "\n".join(block.split("\n")[1:]) for block in cleaned_code_blocks
-    ]
+def remove_c_comments(code):
+    """
+    Removes C-style comments from a string of C code.
 
-    return cleaned_code_blocks
+    Args:
+    - code (str): The string containing C code.
+
+    Returns:
+    - str: The C code string with comments removed.
+    """
+    # Pattern to match single-line and multi-line comments
+    pattern = re.compile(r"//.*?$|/\*.*?\*/", re.DOTALL | re.MULTILINE)
+
+    # Remove the comments
+    clean_code = re.sub(pattern, "", code)
+    clean_code = os.linesep.join([s for s in clean_code.splitlines() if s])
+    return clean_code
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.debug("Hello world!")
 
-    # print(extract_code_from_chatgpt_response(test))
-    # abort
+    include_to_test = "./examples/RBTree/RBTree.h"
+    includes = "./examples/RBTree/RBTree.h"
+    sources = "./examples/RBTree/RBTree.c"
 
-    file_to_test = "./examples/simple.cpp"
-    a = aup.Parser(file_to_test)
-    a.run()
+    with open(include_to_test, "r") as header:
+        content = header.read()
+        content = remove_c_comments(content)
+        functions = extract_c_functions(content)
 
-    func_s = a.functions
+    signatures_num = len(functions)
+    logging.info(f"Signatures num: {signatures_num}")
+    logging.info(f"Signatures: {functions}")
 
     # test first function
-    func = func_s[0]
-    prompts = pgen.generate(func, "")  # FIXME: separate signature and function body
+    # func = func_s[0]
+    prompts = []
+    for sig in functions:
+        prompts.extend(pgen.generate(sig))
+
+    # FIXME: multi file project?
+    prompts_str = []
+    with open(sources, "r") as src:
+        content = src.read()
+        content = remove_c_comments(content)
+        for pr in prompts:
+            header = f"I have header '{include_to_test}' with all function prototypes. C code with functions definitions: {content}\n."
+            prompts_str.append(header + pr.generate())
 
     # use LLM to generate tests
     client = OpenAI()
 
     # generate initial chats
     messages_s = []
-    for prompt in prompts:
+    for prompt in prompts_str:
         messages = [
             {
                 "role": "system",
-                "content": "You are a professional tester of C++ programs. When I ask you to write a test, you will answer only in code without any explanatory text. Response should not contain tested code.",
+                "content": "You are a professional tester of C programs. When I ask you to write a test, you will answer only in code without any explanatory text. Response should not contain tested code. Use only asserts for testing. Test should contain main function.",
             },
             {
                 "role": "user",
-                "content": prompt.generate(),
+                "content": prompt,
             },
         ]
         messages_s.append(messages)
@@ -71,17 +103,18 @@ if __name__ == "__main__":
     for prompt in messages_s:
         logging.info(f"Prompt: {prompt}")
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo", messages=prompt
+            model="gpt-3.5-turbo-1106", messages=prompt
         )
         logging.info(f"Response: {completion}")
         prompt.append(
             {"role": "assistant", "content": completion.choices[0].message.content}
         )
+        # break
 
     # NOTE: assume that there is only once code section in a response
     tests = []
     for compl in messages_s:
-        test = extract_code_from_chatgpt_response(compl[-1]["content"])
+        test = aup.extract_code_from_chatgpt_response(compl[-1]["content"])
         if len(compl) <= 2:
             logging.warn(f"Skip ")
             continue
@@ -91,13 +124,36 @@ if __name__ == "__main__":
             tests.append(test[0])
 
     logging.info(f"Tests:")
+    generated = len(tests)
+    compiled = []
+    passed = []
+    failed = []
     for test in tests:
-        test_src = "./build/" + str(uuid.uuid4()) + ".cpp"
+        test_src = "./build/" + str(uuid.uuid4()) + ".c"
+        test_out = test_src + ".out"
         with open(test_src, "w") as cpp:
-            code = compiler.fixErrors(test)
+            code = "/* file autogenerated */" + compiler.fixErrors(test)
             print(code, file=cpp)
         logging.info(f"--------------------------------------------------")
         logging.info(f"  Test:\n{test}")
-        logging.info(f"Compile:")
-        stat = compiler.Compiler(test_src).run("./test.out")
+        logging.info(f"Launch compiler")
+        stat = compiler.Compiler(test_src, include_file=includes).run(sources, test_out)
         logging.info(f"Compiler result: {stat}")
+
+        if stat.returncode == 0:
+            compiled.append(test_out)
+            command_line = f"{test_out}"
+            stat = subprocess.run(command_line)
+            logging.info(f"Run result: {stat}")
+            is_passed = stat.returncode == 0
+            if stat.returncode == 0:
+                passed.append(test_out)
+            else:
+                failed.append(test_out)
+
+    logging.info("=-----------------------------------------------")
+    logging.info("Stats:")
+    logging.info(f"Generated: {generated}")
+    logging.info(f"Compiled ({len(compiled)}): {compiled}")
+    logging.info(f"Passed ({len(passed)}): {passed}")
+    logging.info(f"Failed ({len(failed)}): {failed}")

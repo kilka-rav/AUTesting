@@ -1,6 +1,7 @@
 import os
 import subprocess
 import logging
+import shlex
 
 
 class Compiler(Exception):
@@ -18,22 +19,30 @@ class Compiler(Exception):
             raise Compiler(self.include_file + " isn't exist")
         return True
 
-    def start(self, out_file: str):
-        command_line = "g++ " + self.file_code + " -o " + out_file
+    def start(self, srcs: str, out_file: str):
+        command_line = "gcc " + self.file_code + f" {srcs} " + " -o " + out_file
         if self.include_file is not "":
-            command_line = command_line + " -I" + self.include_file
+            command_line += " -I ./ -I " + self.include_file
+        command_line = shlex.split(command_line)
         logging.info(f"Compile: {command_line}")
-        s = subprocess.check_call(command_line, shell=True)
+        s = subprocess.run(command_line)
         return s
 
-    def run(self, out_file):
+    def run(self, srcs: str, out_file):
         self.check_files()
-        need_refine = self.start(out_file)
+        need_refine = self.start(srcs, out_file)
         return need_refine
 
 
 def fixErrors(code: str):
     # add include assert.h
     code = "\n#include <assert.h>\n" + code
-    code = "\n#include <iostream>\n" + code
+    code = "\n#include <stdbool.h>\n" + code
+    code = "\n#include <string.h>\n" + code
+    code = '\n#include "./examples/RBTree/RBTree.h"\n' + code
+    code = code.replace('"RBTree.h"', '"./examples/RBTree/RBTree.h"')
+    code = code.replace("<cassert>", "<assert.h>")
+    code = code.replace("<cstdlib>", "<stdlib.h>")
+    code = code.replace("nullptr", "NULL")
+
     return code
